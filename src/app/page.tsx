@@ -49,7 +49,7 @@ export default function Home() {
         </div>
 
         {/* Review List */}
-        <ReviewList key={refreshKey} onReviewComplete={handleProblemAdded} />
+        <ReviewList refreshKey={refreshKey} onStatsChange={handleProblemAdded} />
       </div>
     </main>
   );

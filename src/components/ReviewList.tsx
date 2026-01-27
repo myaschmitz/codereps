@@ -14,10 +14,14 @@ import {
 } from "lucide-react";
 
 interface ReviewListProps {
-  onReviewComplete: () => void;
+  refreshKey?: number;
+  onStatsChange: () => void;
 }
 
-export default function ReviewList({ onReviewComplete }: ReviewListProps) {
+export default function ReviewList({
+  refreshKey,
+  onStatsChange,
+}: ReviewListProps) {
   const [todaysReviews, setTodaysReviews] = useState<ReviewItem[]>([]);
   const [upcomingReviews, setUpcomingReviews] = useState<ReviewItem[]>([]);
   const [showAllTodays, setShowAllTodays] = useState(false);
@@ -26,7 +30,7 @@ export default function ReviewList({ onReviewComplete }: ReviewListProps) {
 
   useEffect(() => {
     loadReviews();
-  }, []);
+  }, [refreshKey]);
 
   const loadReviews = async () => {
     setIsLoading(true);
@@ -48,7 +52,7 @@ export default function ReviewList({ onReviewComplete }: ReviewListProps) {
     try {
       await reviewService.archiveProblem(problemId);
       await loadReviews();
-      onReviewComplete();
+      onStatsChange();
     } catch (error) {
       console.error("Error archiving problem:", error);
     }
@@ -66,7 +70,7 @@ export default function ReviewList({ onReviewComplete }: ReviewListProps) {
     try {
       await reviewService.deleteProblem(problemId);
       await loadReviews();
-      onReviewComplete();
+      onStatsChange();
     } catch (error) {
       console.error("Error deleting problem:", error);
     }
