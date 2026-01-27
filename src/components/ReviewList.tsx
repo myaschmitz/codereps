@@ -92,7 +92,7 @@ export default function ReviewList({ onReviewComplete }: ReviewListProps) {
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-neutral-900">
-            Today's Reviews{" "}
+            Today&apos;s Reviews{" "}
             <span className="text-neutral-400">({todaysReviews.length})</span>
           </h2>
           {todaysReviews.some((r) => r.isOverdue) && (

@@ -150,6 +150,53 @@ export class ReviewService {
   async getProblem(problemId: string): Promise<Problem | null> {
     return await this.repository.findById(problemId);
   }
+
+  /**
+   * Reset the database by deleting all problems
+   */
+  async resetDatabase(): Promise<void> {
+    await this.repository.deleteAll();
+  }
+
+  /**
+   * Export all data as a JSON string with metadata
+   */
+  async exportData(): Promise<string> {
+    const problems = await this.repository.getAll(true);
+
+    const exportPayload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      data: { problems },
+    };
+
+    return JSON.stringify(exportPayload, null, 2);
+  }
+
+  /**
+   * Import data from a JSON string, validating structure
+   * Returns the number of problems imported
+   */
+  async importData(jsonString: string): Promise<number> {
+    const parsed = JSON.parse(jsonString);
+
+    if (!parsed.version || !parsed.data?.problems) {
+      throw new Error("Invalid export file format");
+    }
+
+    const problems = parsed.data.problems.map((p: Problem) => ({
+      ...p,
+      nextReviewDate: new Date(p.nextReviewDate),
+      createdAt: new Date(p.createdAt),
+      reviewHistory: p.reviewHistory.map((r) => ({
+        ...r,
+        date: new Date(r.date),
+      })),
+    }));
+
+    await this.repository.importMany(problems);
+    return problems.length;
+  }
 }
 
 // Singleton instance

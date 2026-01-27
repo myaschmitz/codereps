@@ -44,7 +44,7 @@ export class ProblemRepository {
       return await db.problems.toArray();
     }
 
-    return await db.problems.where("archived").equals(false).toArray();
+    return await db.problems.filter((p) => !p.archived).toArray();
   }
 
   /**
@@ -78,5 +78,19 @@ export class ProblemRepository {
       .first();
 
     return problems || null;
+  }
+
+  /**
+   * Delete all problems from the database
+   */
+  async deleteAll(): Promise<void> {
+    await db.problems.clear();
+  }
+
+  /**
+   * Import multiple problems, replacing any with matching IDs
+   */
+  async importMany(problems: Problem[]): Promise<void> {
+    await db.problems.bulkPut(problems);
   }
 }
