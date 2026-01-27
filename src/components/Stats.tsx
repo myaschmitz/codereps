@@ -78,18 +78,18 @@ interface StatCardProps {
 
 function StatCard({ icon, label, value, color }: StatCardProps) {
   const colorClasses = {
-    blue: "bg-blue-100 text-blue-600",
-    orange: "bg-orange-100 text-orange-600",
-    green: "bg-green-100 text-green-600",
+    blue: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+    orange: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
+    green: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
   };
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+    <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
       <div className="flex items-center gap-3">
         <div className={`rounded-lg p-2.5 ${colorClasses[color]}`}>{icon}</div>
         <div>
-          <div className="text-2xl font-bold text-neutral-900">{value}</div>
-          <div className="text-sm text-neutral-600">{label}</div>
+          <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{value}</div>
+          <div className="text-sm text-neutral-600 dark:text-neutral-400">{label}</div>
         </div>
       </div>
     </div>

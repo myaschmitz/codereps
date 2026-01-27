@@ -8,8 +8,13 @@
     --foreground: 20 14.3% 4.1%;
   }
 
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 60 9.1% 97.8%;
+  }
+
   body {
-    @apply bg-neutral-50 text-neutral-900;
+    @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-50;
   }
 }
 
@@ -26,13 +31,13 @@
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-neutral-100;
+  @apply bg-neutral-100 dark:bg-neutral-800;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-neutral-300 rounded-full;
+  @apply bg-neutral-300 rounded-full dark:bg-neutral-600;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-neutral-400;
+  @apply bg-neutral-400 dark:bg-neutral-500;
 }

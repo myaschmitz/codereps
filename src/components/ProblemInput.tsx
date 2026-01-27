@@ -92,8 +92,8 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
   };
 
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold text-neutral-900">
+    <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+      <h2 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
         {selectedProblem ? "Record Review" : "Add Problem"}
       </h2>
 
@@ -101,7 +101,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
       <div className="relative mb-4">
         <label
           htmlFor="problem-name"
-          className="mb-1.5 block text-sm font-medium text-neutral-700"
+          className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
           Problem Name
         </label>
@@ -117,29 +117,29 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
             }}
             onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
             placeholder="e.g., Two Sum"
-            className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 placeholder-neutral-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 placeholder-neutral-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder-neutral-500"
           />
-          <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
         </div>
 
         {/* Autocomplete Suggestions */}
         {showSuggestions && (
-          <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-neutral-200 bg-white shadow-lg">
+          <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-neutral-200 bg-white shadow-lg dark:border-neutral-600 dark:bg-neutral-700">
             {suggestions.map((problem) => (
               <button
                 key={problem.id}
                 onClick={() => handleSelectSuggestion(problem)}
-                className="w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-neutral-50"
+                className="w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-600"
               >
-                <div className="font-medium text-neutral-900">
+                <div className="font-medium text-neutral-900 dark:text-neutral-100">
                   {problem.name}
                 </div>
                 {problem.number && (
-                  <div className="text-xs text-neutral-500">
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
                     #{problem.number}
                   </div>
                 )}
-                <div className="text-xs text-neutral-400">
+                <div className="text-xs text-neutral-400 dark:text-neutral-500">
                   {problem.reviewHistory.length} review
                   {problem.reviewHistory.length !== 1 ? "s" : ""}
                 </div>
@@ -153,9 +153,9 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
       <div className="mb-4">
         <label
           htmlFor="problem-number"
-          className="mb-1.5 block text-sm font-medium text-neutral-700"
+          className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
-          Problem Number <span className="text-neutral-400">(optional)</span>
+          Problem Number <span className="text-neutral-400 dark:text-neutral-500">(optional)</span>
         </label>
         <input
           id="problem-number"
@@ -163,7 +163,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
           value={problemNumber}
           onChange={(e) => setProblemNumber(e.target.value)}
           placeholder="e.g., 1"
-          className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 placeholder-neutral-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 placeholder-neutral-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder-neutral-500"
         />
       </div>
 
@@ -171,7 +171,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
       <div className="mb-6">
         <label
           htmlFor="review-date"
-          className="mb-1.5 block text-sm font-medium text-neutral-700"
+          className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
           Review Date
         </label>
@@ -181,15 +181,15 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
             type="date"
             value={reviewDate}
             onChange={(e) => setReviewDate(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:[color-scheme:dark]"
           />
-          <Calendar className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
+          <Calendar className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
         </div>
       </div>
 
       {/* Difficulty Buttons */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-neutral-700">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
           How did it go?
         </label>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
