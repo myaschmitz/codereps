@@ -1,3 +1,4 @@
+import Fuse from "fuse.js";
 import { Problem } from "./models/Problem";
 import { db } from "../storage/IndexedDBAdapter";
 
@@ -29,11 +30,14 @@ export class ProblemRepository {
    */
   async findByNamePattern(pattern: string): Promise<Problem[]> {
     const allProblems = await db.problems.toArray();
-    const searchPattern = pattern.toLowerCase();
 
-    return allProblems.filter((p) =>
-      p.name.toLowerCase().includes(searchPattern),
-    );
+    const fuse = new Fuse(allProblems, {
+      keys: ["name"],
+      threshold: 0.4,
+      ignoreLocation: true,
+    });
+
+    return fuse.search(pattern).map((result) => result.item);
   }
 
   /**
