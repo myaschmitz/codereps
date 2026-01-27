@@ -52,6 +52,13 @@ export class ProblemRepository {
   }
 
   /**
+   * Get only archived problems
+   */
+  async getArchived(): Promise<Problem[]> {
+    return await db.problems.filter((p) => p.archived === true).toArray();
+  }
+
+  /**
    * Archive a problem
    */
   async archive(id: string): Promise<void> {

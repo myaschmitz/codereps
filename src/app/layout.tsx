@@ -13,14 +13,14 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LeetCode SRS",
+  title: "CodeReps",
   description: "Spaced repetition system for LeetCode problems",
   manifest: "/manifest.json",
   themeColor: "#f0770b",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "LeetCode SRS",
+    title: "CodeReps",
   },
 };
 

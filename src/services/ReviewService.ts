@@ -103,6 +103,13 @@ export class ReviewService {
   }
 
   /**
+   * Get only archived problems
+   */
+  async getArchivedProblems(): Promise<Problem[]> {
+    return await this.repository.getArchived();
+  }
+
+  /**
    * Get review queue (today's reviews)
    */
   async getTodaysReviews(): Promise<ReviewItem[]> {

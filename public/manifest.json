@@ -1,6 +1,6 @@
 {
-  "name": "LeetCode SRS",
-  "short_name": "LeetCode SRS",
+  "name": "CodeReps",
+  "short_name": "CodeReps",
   "description": "Spaced repetition system for LeetCode problems",
   "start_url": "/",
   "display": "standalone",

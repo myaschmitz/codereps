@@ -22,7 +22,7 @@ export default function Home() {
         <header className="mb-8 flex items-start justify-between">
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl">
-              LeetCode{" "}
+              CodeReps{" "}
               <span className="bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text text-transparent">
                 SRS
               </span>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { reviewService } from "@/services/ReviewService";
+import { Problem } from "@/domain/models/Problem";
 import {
   Settings,
   Download,
@@ -10,6 +11,10 @@ import {
   ArrowLeft,
   AlertTriangle,
   CheckCircle2,
+  Archive,
+  ArchiveRestore,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -21,6 +26,40 @@ export default function SettingsPage() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetConfirmText, setResetConfirmText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [archivedProblems, setArchivedProblems] = useState<Problem[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
+  const [isLoadingArchived, setIsLoadingArchived] = useState(false);
+
+  const loadArchivedProblems = useCallback(async () => {
+    setIsLoadingArchived(true);
+    try {
+      const problems = await reviewService.getArchivedProblems();
+      setArchivedProblems(problems);
+    } catch (error) {
+      console.error("Error loading archived problems:", error);
+    } finally {
+      setIsLoadingArchived(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (showArchived && archivedProblems.length === 0) {
+      loadArchivedProblems();
+    }
+  }, [showArchived, archivedProblems.length, loadArchivedProblems]);
+
+  const handleUnarchive = async (problemId: string) => {
+    try {
+      await reviewService.unarchiveProblem(problemId);
+      setArchivedProblems((prev) => prev.filter((p) => p.id !== problemId));
+      setStatus({ type: "success", message: "Problem restored successfully" });
+    } catch (error) {
+      setStatus({
+        type: "error",
+        message: `Failed to restore problem: ${error instanceof Error ? error.message : "Unknown error"}`,
+      });
+    }
+  };
 
   const clearStatus = () => setStatus(null);
 
@@ -225,6 +264,93 @@ export default function SettingsPage() {
               )}
             </SettingsRow>
           </div>
+        </section>
+
+        {/* Archived Problems Section */}
+        <section className="mt-6 rounded-xl border border-neutral-200 bg-white shadow-sm">
+          <button
+            type="button"
+            onClick={() => {
+              setShowArchived(!showArchived);
+              if (!showArchived) {
+                loadArchivedProblems();
+              }
+            }}
+            className="flex w-full items-center justify-between border-b border-neutral-200 px-6 py-4 text-left"
+          >
+            <div className="flex items-center gap-4">
+              <div className="rounded-lg bg-amber-100 p-2.5 text-amber-600">
+                <Archive className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-900">
+                  Archived Problems
+                  {archivedProblems.length > 0 && (
+                    <span className="ml-2 text-neutral-400">
+                      ({archivedProblems.length})
+                    </span>
+                  )}
+                </h2>
+                <p className="text-sm text-neutral-600">
+                  View and restore previously archived problems
+                </p>
+              </div>
+            </div>
+            {showArchived ? (
+              <ChevronDown className="h-5 w-5 text-neutral-400" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-neutral-400" />
+            )}
+          </button>
+
+          {showArchived && (
+            <div className="p-6">
+              {isLoadingArchived ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                </div>
+              ) : archivedProblems.length === 0 ? (
+                <div className="py-8 text-center text-neutral-500">
+                  No archived problems
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {archivedProblems.map((problem) => (
+                    <div
+                      key={problem.id}
+                      className="flex items-center justify-between gap-4 rounded-lg border border-neutral-200 bg-neutral-50/50 p-4"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium text-neutral-900">
+                            {problem.name}
+                          </h3>
+                          {problem.number && (
+                            <span className="text-sm text-neutral-500">
+                              #{problem.number}
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-1 text-sm text-neutral-600">
+                          {problem.reviewHistory.length} review
+                          {problem.reviewHistory.length !== 1 ? "s" : ""}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleUnarchive(problem.id)}
+                        className="flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700"
+                        title="Restore problem"
+                      >
+                        <ArchiveRestore className="h-4 w-4" />
+                        Restore
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </section>
       </div>
     </main>
