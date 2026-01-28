@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "CodeReps",
-  description: "Spaced repetition system for LeetCode problems",
+  description: "Spaced repetition system for coding problems",
   manifest: "/manifest.json",
   themeColor: "#f0770b",
   appleWebApp: {

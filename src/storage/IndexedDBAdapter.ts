@@ -7,11 +7,11 @@ import { Problem } from "../domain/models/Problem";
  * Wraps Dexie/IndexedDB complexity.
  * Provides type-safe database access.
  */
-class LeetCodeSRSDatabase extends Dexie {
+class CodeRepsDatabase extends Dexie {
   problems!: Table<Problem>;
 
   constructor() {
-    super("LeetCodeSRS");
+    super("CodeReps");
 
     this.version(1).stores({
       problems: "id, name, nextReviewDate, archived, createdAt",
@@ -20,4 +20,4 @@ class LeetCodeSRSDatabase extends Dexie {
 }
 
 // Singleton database instance
-export const db = new LeetCodeSRSDatabase();
+export const db = new CodeRepsDatabase();

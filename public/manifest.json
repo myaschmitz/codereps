@@ -1,7 +1,7 @@
 {
   "name": "CodeReps",
   "short_name": "CodeReps",
-  "description": "Spaced repetition system for LeetCode problems",
+  "description": "Spaced repetition system for coding problems",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

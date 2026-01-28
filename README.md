@@ -1,4 +1,4 @@
-# LeetCode SRS (Spaced Repetition System)
+# CodeReps
 
 A lightweight, offline-first Progressive Web App (PWA) for tracking LeetCode problem reviews using spaced repetition. Built with clean architecture principles and designed for deliberate practice.
 
@@ -72,8 +72,8 @@ After each successful review, intervals multiply:
 
 1. **Extract the ZIP file**
 ```bash
-unzip leetcode-srs.zip
-cd leetcode-srs
+unzip codereps.zip
+cd codereps
 ```
 
 2. **Install dependencies**
@@ -175,7 +175,7 @@ That's it! Your app will be live at `https://your-app.vercel.app`
 ## File Structure
 
 ```
-leetcode-srs/
+codereps/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── layout.tsx
