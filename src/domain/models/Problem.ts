@@ -12,6 +12,7 @@ export interface Problem {
 export interface ReviewRecord {
   date: Date;
   difficulty: Difficulty;
+  notes?: string;
 }
 
 export enum Difficulty {

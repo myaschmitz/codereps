@@ -21,6 +21,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
   const [suggestions, setSuggestions] = useState<Problem[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
+  const [reviewNotes, setReviewNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -63,6 +64,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
           selectedProblem.id,
           difficulty,
           parsedDate,
+          reviewNotes.trim() || undefined,
         );
       } else {
         // Adding a new problem
@@ -73,13 +75,19 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
         );
 
         // If it's a new problem, record the initial review
-        await reviewService.recordReview(problem.id, difficulty, parsedDate);
+        await reviewService.recordReview(
+          problem.id,
+          difficulty,
+          parsedDate,
+          reviewNotes.trim() || undefined,
+        );
       }
 
       // Reset form
       setProblemName("");
       setProblemNumber("");
       setReviewDate(format(new Date(), "yyyy-MM-dd"));
+      setReviewNotes("");
       setSelectedProblem(null);
       setSelectedDifficulty(null);
       onProblemAdded();
@@ -185,6 +193,24 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
           />
           <Calendar className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
         </div>
+      </div>
+
+      {/* Review Notes */}
+      <div className="mb-6">
+        <label
+          htmlFor="review-notes"
+          className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+        >
+          Notes <span className="text-neutral-400 dark:text-neutral-500">(optional)</span>
+        </label>
+        <textarea
+          id="review-notes"
+          value={reviewNotes}
+          onChange={(e) => setReviewNotes(e.target.value)}
+          placeholder="e.g., Struggled with the two-pointer approach"
+          rows={2}
+          className="min-w-0 w-full resize-none rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 placeholder-neutral-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder-neutral-500"
+        />
       </div>
 
       {/* Difficulty Buttons */}

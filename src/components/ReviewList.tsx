@@ -276,6 +276,12 @@ function ReviewCard({ review, onArchive, onDelete }: ReviewCardProps) {
               </>
             )}
           </div>
+
+          {lastReview?.notes && (
+            <p className="mt-2 text-sm text-neutral-600 italic dark:text-neutral-400">
+              {lastReview.notes}
+            </p>
+          )}
         </div>
 
         <div className="flex gap-2">

@@ -57,6 +57,7 @@ export class ReviewService {
     problemId: string,
     difficulty: Difficulty,
     reviewDate?: Date,
+    notes?: string,
   ): Promise<Problem> {
     const problem = await this.repository.findById(problemId);
     if (!problem) {
@@ -67,6 +68,7 @@ export class ReviewService {
     const review: ReviewRecord = {
       date: reviewDate || new Date(),
       difficulty,
+      ...(notes && { notes }),
     };
     problem.reviewHistory.push(review);
 
