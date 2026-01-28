@@ -117,7 +117,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
             }}
             onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
             placeholder="e.g., Two Sum"
-            className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 placeholder-neutral-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder-neutral-500"
+            className="min-w-0 w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 placeholder-neutral-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder-neutral-500"
           />
           <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
         </div>
@@ -163,7 +163,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
           value={problemNumber}
           onChange={(e) => setProblemNumber(e.target.value)}
           placeholder="e.g., 1"
-          className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 placeholder-neutral-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder-neutral-500"
+          className="min-w-0 w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 placeholder-neutral-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder-neutral-500"
         />
       </div>
 
@@ -181,7 +181,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
             type="date"
             value={reviewDate}
             onChange={(e) => setReviewDate(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:[color-scheme:dark]"
+            className="min-w-0 w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:[color-scheme:dark]"
           />
           <Calendar className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
         </div>
