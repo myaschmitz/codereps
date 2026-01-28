@@ -92,7 +92,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
   };
 
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+    <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
       <h2 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
         {selectedProblem ? "Record Review" : "Add Problem"}
       </h2>
@@ -168,20 +168,20 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
       </div>
 
       {/* Review Date */}
-      <div className="mb-6">
+      <div className="mb-6 max-w-full">
         <label
           htmlFor="review-date"
           className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
           Review Date
         </label>
-        <div className="relative">
+        <div className="relative max-w-full">
           <input
             id="review-date"
             type="date"
             value={reviewDate}
             onChange={(e) => setReviewDate(e.target.value)}
-            className="min-w-0 w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:[color-scheme:dark]"
+            className="min-w-0 max-w-full w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:[color-scheme:dark]"
           />
           <Calendar className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
         </div>
