@@ -163,7 +163,10 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
           htmlFor="problem-number"
           className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
-          Problem Number <span className="text-neutral-400 dark:text-neutral-500">(optional)</span>
+          Problem Number{" "}
+          <span className="text-neutral-400 dark:text-neutral-500">
+            (optional)
+          </span>
         </label>
         <input
           id="problem-number"
@@ -189,9 +192,8 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
             type="date"
             value={reviewDate}
             onChange={(e) => setReviewDate(e.target.value)}
-            className="min-w-0 max-w-full w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:[color-scheme:dark]"
+            className="min-w-0 max-w-full w-full rounded-lg border border-neutral-300 bg-white sm:px-4 py-2.5 text-neutral-900 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:[color-scheme:dark]"
           />
-          <Calendar className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
         </div>
       </div>
 
@@ -201,7 +203,10 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
           htmlFor="review-notes"
           className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
         >
-          Notes <span className="text-neutral-400 dark:text-neutral-500">(optional)</span>
+          Notes{" "}
+          <span className="text-neutral-400 dark:text-neutral-500">
+            (optional)
+          </span>
         </label>
         <textarea
           id="review-notes"
