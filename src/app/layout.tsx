@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -13,11 +13,14 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-geist-mono",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#f0770b",
+};
+
 export const metadata: Metadata = {
   title: "CodeReps",
   description: "Spaced repetition system for coding problems",
   manifest: "/manifest.json",
-  themeColor: "#f0770b",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
