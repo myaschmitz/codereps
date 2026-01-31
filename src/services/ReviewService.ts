@@ -161,6 +161,34 @@ export class ReviewService {
   }
 
   /**
+   * Update a note for a specific review in a problem's history
+   */
+  async updateReviewNote(
+    problemId: string,
+    reviewIndex: number,
+    note: string
+  ): Promise<Problem> {
+    const problem = await this.repository.findById(problemId);
+    if (!problem) {
+      throw new Error("Problem not found");
+    }
+
+    if (reviewIndex < 0 || reviewIndex >= problem.reviewHistory.length) {
+      throw new Error("Review index out of bounds");
+    }
+
+    // Update the note (empty string removes the note)
+    if (note.trim()) {
+      problem.reviewHistory[reviewIndex].notes = note.trim();
+    } else {
+      delete problem.reviewHistory[reviewIndex].notes;
+    }
+
+    await this.repository.save(problem);
+    return problem;
+  }
+
+  /**
    * Reset the database by deleting all problems
    */
   async resetDatabase(): Promise<void> {
