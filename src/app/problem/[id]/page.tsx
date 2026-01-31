@@ -43,6 +43,12 @@ const getDifficultyBadge = (difficulty: Difficulty) => {
   );
 };
 
+interface EditState {
+  date: string; // ISO date string for input
+  difficulty: Difficulty;
+  note: string;
+}
+
 export default function ProblemDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -50,7 +56,11 @@ export default function ProblemDetailPage() {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editNote, setEditNote] = useState("");
+  const [editState, setEditState] = useState<EditState>({
+    date: "",
+    difficulty: Difficulty.MEDIUM,
+    note: "",
+  });
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -102,26 +112,34 @@ export default function ProblemDetailPage() {
     }
   };
 
-  const handleStartEdit = (index: number, currentNote: string) => {
+  const handleStartEdit = (index: number, record: ReviewRecord) => {
     setEditingIndex(index);
-    setEditNote(currentNote || "");
+    setEditState({
+      date: format(new Date(record.date), "yyyy-MM-dd"),
+      difficulty: record.difficulty,
+      note: record.notes || "",
+    });
   };
 
   const handleCancelEdit = () => {
     setEditingIndex(null);
-    setEditNote("");
+    setEditState({ date: "", difficulty: Difficulty.MEDIUM, note: "" });
   };
 
-  const handleSaveNote = async (index: number) => {
+  const handleSaveReview = async (index: number) => {
     if (!problem) return;
     setIsSaving(true);
     try {
-      await reviewService.updateReviewNote(problem.id, index, editNote);
+      await reviewService.updateReviewRecord(problem.id, index, {
+        date: new Date(editState.date),
+        difficulty: editState.difficulty,
+        note: editState.note,
+      });
       await loadProblem();
       setEditingIndex(null);
-      setEditNote("");
+      setEditState({ date: "", difficulty: Difficulty.MEDIUM, note: "" });
     } catch (error) {
-      console.error("Error saving note:", error);
+      console.error("Error saving review:", error);
     } finally {
       setIsSaving(false);
     }
@@ -291,12 +309,12 @@ export default function ProblemDetailPage() {
                         reviewRecord={reviewRecord}
                         index={actualIndex}
                         isEditing={editingIndex === actualIndex}
-                        editNote={editNote}
+                        editState={editState}
                         isSaving={isSaving}
                         onStartEdit={handleStartEdit}
                         onCancelEdit={handleCancelEdit}
-                        onSaveNote={handleSaveNote}
-                        onEditNoteChange={setEditNote}
+                        onSaveReview={handleSaveReview}
+                        onEditStateChange={setEditState}
                       />
                     );
                   })}
@@ -313,24 +331,31 @@ interface ReviewHistoryItemProps {
   reviewRecord: ReviewRecord;
   index: number;
   isEditing: boolean;
-  editNote: string;
+  editState: EditState;
   isSaving: boolean;
-  onStartEdit: (index: number, currentNote: string) => void;
+  onStartEdit: (index: number, record: ReviewRecord) => void;
   onCancelEdit: () => void;
-  onSaveNote: (index: number) => void;
-  onEditNoteChange: (note: string) => void;
+  onSaveReview: (index: number) => void;
+  onEditStateChange: (state: EditState) => void;
 }
+
+const difficultyOptions = [
+  { value: Difficulty.EASY, label: "Easy" },
+  { value: Difficulty.MEDIUM, label: "Medium" },
+  { value: Difficulty.HARD, label: "Hard" },
+  { value: Difficulty.DIDNT_GET, label: "Didn't Get" },
+];
 
 function ReviewHistoryItem({
   reviewRecord,
   index,
   isEditing,
-  editNote,
+  editState,
   isSaving,
   onStartEdit,
   onCancelEdit,
-  onSaveNote,
-  onEditNoteChange,
+  onSaveReview,
+  onEditStateChange,
 }: ReviewHistoryItemProps) {
   return (
     <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-600 dark:bg-neutral-900/50">
@@ -343,9 +368,9 @@ function ReviewHistoryItem({
         </div>
         {!isEditing && (
           <button
-            onClick={() => onStartEdit(index, reviewRecord.notes || "")}
+            onClick={() => onStartEdit(index, reviewRecord)}
             className="rounded p-1.5 text-neutral-400 transition-colors hover:bg-neutral-200 hover:text-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-neutral-300"
-            title="Edit note"
+            title="Edit review"
           >
             <Pencil className="h-4 w-4" />
           </button>
@@ -353,16 +378,70 @@ function ReviewHistoryItem({
       </div>
 
       {isEditing ? (
-        <div className="mt-3">
-          <textarea
-            value={editNote}
-            onChange={(e) => onEditNoteChange(e.target.value)}
-            placeholder="Add a note for this review..."
-            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
-            rows={3}
-            autoFocus
-          />
-          <div className="mt-3 flex justify-end gap-2">
+        <div className="mt-3 space-y-3">
+          {/* Date input */}
+          <div>
+            <label
+              htmlFor={`review-date-${index}`}
+              className="mb-1 block text-xs font-medium text-neutral-600 dark:text-neutral-400"
+            >
+              Date
+            </label>
+            <input
+              id={`review-date-${index}`}
+              type="date"
+              value={editState.date}
+              onChange={(e) =>
+                onEditStateChange({ ...editState, date: e.target.value })
+              }
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+            />
+          </div>
+
+          {/* Difficulty select */}
+          <div>
+            <label
+              htmlFor={`review-difficulty-${index}`}
+              className="mb-1 block text-xs font-medium text-neutral-600 dark:text-neutral-400"
+            >
+              Difficulty
+            </label>
+            <select
+              id={`review-difficulty-${index}`}
+              value={editState.difficulty}
+              onChange={(e) =>
+                onEditStateChange({
+                  ...editState,
+                  difficulty: e.target.value as Difficulty,
+                })
+              }
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+            >
+              {difficultyOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Note textarea */}
+          <div>
+            <label className="mb-1 block text-xs font-medium text-neutral-600 dark:text-neutral-400">
+              Note (optional)
+            </label>
+            <textarea
+              value={editState.note}
+              onChange={(e) =>
+                onEditStateChange({ ...editState, note: e.target.value })
+              }
+              placeholder="Add a note for this review..."
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
+              rows={3}
+            />
+          </div>
+
+          <div className="flex justify-end gap-2">
             <button
               onClick={onCancelEdit}
               disabled={isSaving}
@@ -372,7 +451,7 @@ function ReviewHistoryItem({
               Cancel
             </button>
             <button
-              onClick={() => onSaveNote(index)}
+              onClick={() => onSaveReview(index)}
               disabled={isSaving}
               className="flex items-center gap-1.5 rounded-lg bg-primary-500 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
             >

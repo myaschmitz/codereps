@@ -161,12 +161,17 @@ export class ReviewService {
   }
 
   /**
-   * Update a note for a specific review in a problem's history
+   * Update a review record (date, difficulty, note)
+   * If editing the most recent review, recalculates nextReviewDate
    */
-  async updateReviewNote(
+  async updateReviewRecord(
     problemId: string,
     reviewIndex: number,
-    note: string
+    updates: {
+      date?: Date;
+      difficulty?: Difficulty;
+      note?: string;
+    }
   ): Promise<Problem> {
     const problem = await this.repository.findById(problemId);
     if (!problem) {
@@ -177,11 +182,31 @@ export class ReviewService {
       throw new Error("Review index out of bounds");
     }
 
-    // Update the note (empty string removes the note)
-    if (note.trim()) {
-      problem.reviewHistory[reviewIndex].notes = note.trim();
-    } else {
-      delete problem.reviewHistory[reviewIndex].notes;
+    const review = problem.reviewHistory[reviewIndex];
+    const isLastReview = reviewIndex === problem.reviewHistory.length - 1;
+
+    // Update fields if provided
+    if (updates.date !== undefined) {
+      review.date = updates.date;
+    }
+    if (updates.difficulty !== undefined) {
+      review.difficulty = updates.difficulty;
+    }
+    if (updates.note !== undefined) {
+      if (updates.note.trim()) {
+        review.notes = updates.note.trim();
+      } else {
+        delete review.notes;
+      }
+    }
+
+    // If this is the most recent review and date/difficulty changed, recalculate next review date
+    if (isLastReview && (updates.date !== undefined || updates.difficulty !== undefined)) {
+      problem.nextReviewDate = this.scheduler.scheduleNextReview(
+        problem,
+        review.difficulty,
+        review.date
+      );
     }
 
     await this.repository.save(problem);

@@ -15,7 +15,7 @@ export class SRSScheduler {
    * Calculate the next review date based on difficulty and review history
    * This is the main public interface - simple input/output
    */
-  scheduleNextReview(problem: Problem, difficulty: Difficulty): Date {
+  scheduleNextReview(problem: Problem, difficulty: Difficulty, fromDate?: Date): Date {
     const reviewCount = problem.reviewHistory.length;
     const baseInterval = this.getBaseInterval(difficulty);
     const multiplier = this.getMultiplier(reviewCount, difficulty);
@@ -24,8 +24,9 @@ export class SRSScheduler {
       this.MAX_INTERVAL_DAYS,
     );
 
-    // Always schedule from today (start of day) to avoid time-of-day issues
-    return startOfDay(addDays(new Date(), intervalDays));
+    // Schedule from provided date or today (start of day) to avoid time-of-day issues
+    const baseDate = fromDate ? startOfDay(fromDate) : startOfDay(new Date());
+    return startOfDay(addDays(baseDate, intervalDays));
   }
 
   /**
