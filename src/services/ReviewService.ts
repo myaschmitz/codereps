@@ -4,9 +4,11 @@ import {
   createProblem,
   ReviewRecord,
 } from "../domain/models/Problem";
+import { TodoItem } from "../domain/models/TodoItem";
 import { ProblemRepository } from "../domain/ProblemRepository";
 import { SRSScheduler } from "../domain/SRSScheduler";
 import { ReviewQueue, ReviewItem } from "../domain/ReviewQueue";
+import { todoService } from "./TodoService";
 
 /**
  * ReviewService - APPLICATION SERVICE (THIN)
@@ -214,10 +216,11 @@ export class ReviewService {
   }
 
   /**
-   * Reset the database by deleting all problems
+   * Reset the database by deleting all problems and todos
    */
   async resetDatabase(): Promise<void> {
     await this.repository.deleteAll();
+    await todoService.deleteAll();
   }
 
   /**
@@ -225,11 +228,12 @@ export class ReviewService {
    */
   async exportData(): Promise<string> {
     const problems = await this.repository.getAll(true);
+    const todoItems = await todoService.exportData();
 
     const exportPayload = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
-      data: { problems },
+      data: { problems, todoItems },
     };
 
     return JSON.stringify(exportPayload, null, 2);
@@ -257,6 +261,12 @@ export class ReviewService {
     }));
 
     await this.repository.importMany(problems);
+
+    // Import todos if present (version 2+)
+    if (parsed.data.todoItems) {
+      await todoService.importData(parsed.data.todoItems);
+    }
+
     return problems.length;
   }
 }

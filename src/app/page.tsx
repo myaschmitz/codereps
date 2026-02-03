@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Settings } from "lucide-react";
+import { Settings, ListTodo } from "lucide-react";
 import ProblemInput from "@/components/ProblemInput";
 import ReviewList from "@/components/ReviewList";
 import Stats from "@/components/Stats";
@@ -31,13 +31,22 @@ export default function Home() {
               Spaced repetition for deliberate practice
             </p>
           </div>
-          <Link
-            href="/settings"
-            className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-            aria-label="Settings"
-          >
-            <Settings className="h-6 w-6" />
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link
+              href="/todos"
+              className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+              aria-label="To-Do List"
+            >
+              <ListTodo className="h-6 w-6" />
+            </Link>
+            <Link
+              href="/settings"
+              className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+              aria-label="Settings"
+            >
+              <Settings className="h-6 w-6" />
+            </Link>
+          </div>
         </header>
 
         {/* Stats */}

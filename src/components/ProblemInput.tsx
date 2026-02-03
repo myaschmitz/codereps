@@ -2,9 +2,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import { reviewService } from "@/services/ReviewService";
+import { todoService } from "@/services/TodoService";
 import { Problem, Difficulty } from "@/domain/models/Problem";
+import { TodoItem } from "@/domain/models/TodoItem";
 import { format } from "date-fns";
-import { Search, Calendar } from "lucide-react";
+import { Search, ListTodo } from "lucide-react";
+
+type SuggestionItem =
+  | { type: "problem"; data: Problem }
+  | { type: "todo"; data: TodoItem };
 
 interface ProblemInputProps {
   onProblemAdded: () => void;
@@ -18,34 +24,53 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
   );
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty | null>(null);
-  const [suggestions, setSuggestions] = useState<Problem[]>([]);
+  const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
+  const [selectedFromTodo, setSelectedFromTodo] = useState(false);
   const [reviewNotes, setReviewNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Search for existing problems as user types
+  // Search for existing problems and todos as user types
   useEffect(() => {
-    const searchProblems = async () => {
+    const searchAll = async () => {
       if (problemName.length > 0) {
-        const results = await reviewService.searchProblems(problemName);
-        setSuggestions(results);
-        setShowSuggestions(results.length > 0);
+        const [problems, todos] = await Promise.all([
+          reviewService.searchProblems(problemName),
+          todoService.searchTodos(problemName),
+        ]);
+
+        const suggestionItems: SuggestionItem[] = [
+          ...todos.map((todo) => ({ type: "todo" as const, data: todo })),
+          ...problems.map((problem) => ({ type: "problem" as const, data: problem })),
+        ];
+
+        setSuggestions(suggestionItems);
+        setShowSuggestions(suggestionItems.length > 0);
       } else {
         setSuggestions([]);
         setShowSuggestions(false);
       }
     };
 
-    const debounce = setTimeout(searchProblems, 200);
+    const debounce = setTimeout(searchAll, 200);
     return () => clearTimeout(debounce);
   }, [problemName]);
 
-  const handleSelectSuggestion = (problem: Problem) => {
-    setSelectedProblem(problem);
-    setProblemName(problem.name);
-    setProblemNumber(problem.number?.toString() || "");
+  const handleSelectSuggestion = (suggestion: SuggestionItem) => {
+    if (suggestion.type === "problem") {
+      setSelectedProblem(suggestion.data);
+      setProblemName(suggestion.data.name);
+      setProblemNumber(suggestion.data.number?.toString() || "");
+      setSelectedFromTodo(false);
+    } else {
+      // It's a todo item
+      setSelectedProblem(null);
+      setProblemName(suggestion.data.name);
+      setProblemNumber(suggestion.data.number?.toString() || "");
+      setSelectedFromTodo(true);
+    }
     setShowSuggestions(false);
   };
 
@@ -68,9 +93,13 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
         );
       } else {
         // Adding a new problem
+        // Parse problem number, ensuring it's a valid positive integer
+        const parsedNumber = problemNumber ? parseInt(problemNumber, 10) : NaN;
+        const validNumber = !isNaN(parsedNumber) && parsedNumber > 0 ? parsedNumber : undefined;
+
         const problem = await reviewService.addProblem(
           problemName.trim(),
-          problemNumber ? parseInt(problemNumber) : undefined,
+          validNumber,
           parsedDate,
         );
 
@@ -83,12 +112,16 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
         );
       }
 
+      // Auto-complete matching todo when a problem is reviewed
+      await todoService.markCompleteByName(problemName.trim());
+
       // Reset form
       setProblemName("");
       setProblemNumber("");
       setReviewDate(format(new Date(), "yyyy-MM-dd"));
       setReviewNotes("");
       setSelectedProblem(null);
+      setSelectedFromTodo(false);
       setSelectedDifficulty(null);
       onProblemAdded();
       inputRef.current?.focus();
@@ -122,6 +155,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
             onChange={(e) => {
               setProblemName(e.target.value);
               setSelectedProblem(null);
+              setSelectedFromTodo(false);
             }}
             onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
             onBlur={() => {
@@ -137,24 +171,40 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
         {/* Autocomplete Suggestions */}
         {showSuggestions && (
           <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-neutral-200 bg-white shadow-lg dark:border-neutral-600 dark:bg-neutral-700">
-            {suggestions.map((problem) => (
+            {suggestions.map((suggestion) => (
               <button
-                key={problem.id}
-                onClick={() => handleSelectSuggestion(problem)}
+                type="button"
+                key={suggestion.type === "problem" ? suggestion.data.id : `todo-${suggestion.data.id}`}
+                onClick={() => handleSelectSuggestion(suggestion)}
                 className="w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-600"
               >
-                <div className="font-medium text-neutral-900 dark:text-neutral-100">
-                  {problem.name}
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                    {suggestion.data.name}
+                  </span>
+                  {suggestion.type === "todo" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                      <ListTodo className="h-3 w-3" />
+                      To-Do
+                    </span>
+                  )}
                 </div>
-                {problem.number && (
+                {suggestion.data.number && (
                   <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                    #{problem.number}
+                    #{suggestion.data.number}
                   </div>
                 )}
-                <div className="text-xs text-neutral-400 dark:text-neutral-500">
-                  {problem.reviewHistory.length} review
-                  {problem.reviewHistory.length !== 1 ? "s" : ""}
-                </div>
+                {suggestion.type === "problem" && (
+                  <div className="text-xs text-neutral-400 dark:text-neutral-500">
+                    {suggestion.data.reviewHistory.length} review
+                    {suggestion.data.reviewHistory.length !== 1 ? "s" : ""}
+                  </div>
+                )}
+                {suggestion.type === "todo" && suggestion.data.note && (
+                  <div className="text-xs text-neutral-400 dark:text-neutral-500 truncate">
+                    {suggestion.data.note}
+                  </div>
+                )}
               </button>
             ))}
           </div>
@@ -175,6 +225,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
         <input
           id="problem-number"
           type="number"
+          min="1"
           value={problemNumber}
           onChange={(e) => setProblemNumber(e.target.value)}
           placeholder="e.g., 1"
