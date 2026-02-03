@@ -124,6 +124,10 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
               setSelectedProblem(null);
             }}
             onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+            onBlur={() => {
+              // Delay hiding to allow clicking on suggestions
+              setTimeout(() => setShowSuggestions(false), 150);
+            }}
             placeholder="e.g., Two Sum"
             className="min-w-0 w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 pl-10 text-neutral-900 placeholder-neutral-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder-neutral-500"
           />

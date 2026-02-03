@@ -33,7 +33,7 @@ export class ProblemRepository {
 
     const fuse = new Fuse(allProblems, {
       keys: ["name"],
-      threshold: 0.4,
+      threshold: 0.25,
       ignoreLocation: true,
     });
 
