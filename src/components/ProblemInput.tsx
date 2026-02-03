@@ -124,7 +124,6 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
       setSelectedFromTodo(false);
       setSelectedDifficulty(null);
       onProblemAdded();
-      inputRef.current?.focus();
     } catch (error) {
       console.error("Error adding problem:", error);
     } finally {
