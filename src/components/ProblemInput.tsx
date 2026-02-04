@@ -35,6 +35,13 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
   // Search for existing problems and todos as user types
   useEffect(() => {
     const searchAll = async () => {
+      // Don't show suggestions if a problem/todo has already been selected
+      if (selectedProblem || selectedFromTodo) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+
       if (problemName.length > 0) {
         const [problems, todos] = await Promise.all([
           reviewService.searchProblems(problemName),
@@ -56,7 +63,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
 
     const debounce = setTimeout(searchAll, 200);
     return () => clearTimeout(debounce);
-  }, [problemName]);
+  }, [problemName, selectedProblem, selectedFromTodo]);
 
   const handleSelectSuggestion = (suggestion: SuggestionItem) => {
     if (suggestion.type === "problem") {
