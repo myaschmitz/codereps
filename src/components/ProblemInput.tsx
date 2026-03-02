@@ -29,6 +29,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
   const [selectedFromTodo, setSelectedFromTodo] = useState(false);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [autoArchive, setAutoArchive] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -98,6 +99,10 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
           parsedDate,
           reviewNotes.trim() || undefined,
         );
+
+        if (autoArchive) {
+          await reviewService.archiveProblem(selectedProblem.id);
+        }
       } else {
         // Adding a new problem
         // Parse problem number, ensuring it's a valid positive integer
@@ -117,6 +122,10 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
           parsedDate,
           reviewNotes.trim() || undefined,
         );
+
+        if (autoArchive) {
+          await reviewService.archiveProblem(problem.id);
+        }
       }
 
       // Auto-complete matching todo when a problem is reviewed
@@ -127,6 +136,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
       setProblemNumber("");
       setReviewDate(format(new Date(), "yyyy-MM-dd"));
       setReviewNotes("");
+      setAutoArchive(false);
       setSelectedProblem(null);
       setSelectedFromTodo(false);
       setSelectedPriority(null);
@@ -277,6 +287,21 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
           rows={2}
           className="min-w-0 w-full resize-none rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 placeholder-neutral-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder-neutral-500"
         />
+      </div>
+
+      {/* Auto-Archive Checkbox */}
+      <div className="mb-6">
+        <label className="flex cursor-pointer items-center gap-2.5">
+          <input
+            type="checkbox"
+            checked={autoArchive}
+            onChange={(e) => setAutoArchive(e.target.checked)}
+            className="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-700"
+          />
+          <span className="text-sm text-neutral-700 dark:text-neutral-300">
+            Archive immediately
+          </span>
+        </label>
       </div>
 
       {/* Priority Buttons */}
