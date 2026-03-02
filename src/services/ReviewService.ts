@@ -1,6 +1,6 @@
 import {
   Problem,
-  Difficulty,
+  ReturnPriority,
   createProblem,
   ReviewRecord,
 } from "../domain/models/Problem";
@@ -9,6 +9,19 @@ import { ProblemRepository } from "../domain/ProblemRepository";
 import { SRSScheduler } from "../domain/SRSScheduler";
 import { ReviewQueue, ReviewItem } from "../domain/ReviewQueue";
 import { todoService } from "./TodoService";
+
+/**
+ * Map old difficulty strings to new priority values (for v2 import migration)
+ */
+function migrateDifficultyToPriority(difficulty: string): ReturnPriority {
+  const mapping: Record<string, ReturnPriority> = {
+    EASY: 1,
+    MEDIUM: 3,
+    HARD: 5,
+    DIDNT_GET: 5,
+  };
+  return mapping[difficulty] ?? 3;
+}
 
 /**
  * ReviewService - APPLICATION SERVICE (THIN)
@@ -57,7 +70,7 @@ export class ReviewService {
    */
   async recordReview(
     problemId: string,
-    difficulty: Difficulty,
+    priority: ReturnPriority,
     reviewDate?: Date,
     notes?: string,
   ): Promise<Problem> {
@@ -69,7 +82,7 @@ export class ReviewService {
     // Add review to history
     const review: ReviewRecord = {
       date: reviewDate || new Date(),
-      difficulty,
+      priority,
       ...(notes && { notes }),
     };
     problem.reviewHistory.push(review);
@@ -77,7 +90,7 @@ export class ReviewService {
     // Calculate next review date
     problem.nextReviewDate = this.scheduler.scheduleNextReview(
       problem,
-      difficulty,
+      priority,
     );
 
     // Auto-archive if meets threshold
@@ -163,7 +176,7 @@ export class ReviewService {
   }
 
   /**
-   * Update a review record (date, difficulty, note)
+   * Update a review record (priority, note)
    * If editing the most recent review, recalculates nextReviewDate
    */
   async updateReviewRecord(
@@ -171,7 +184,7 @@ export class ReviewService {
     reviewIndex: number,
     updates: {
       date?: Date;
-      difficulty?: Difficulty;
+      priority?: ReturnPriority;
       note?: string;
     }
   ): Promise<Problem> {
@@ -191,8 +204,8 @@ export class ReviewService {
     if (updates.date !== undefined) {
       review.date = updates.date;
     }
-    if (updates.difficulty !== undefined) {
-      review.difficulty = updates.difficulty;
+    if (updates.priority !== undefined) {
+      review.priority = updates.priority;
     }
     if (updates.note !== undefined) {
       if (updates.note.trim()) {
@@ -202,11 +215,11 @@ export class ReviewService {
       }
     }
 
-    // If this is the most recent review and date/difficulty changed, recalculate next review date
-    if (isLastReview && (updates.date !== undefined || updates.difficulty !== undefined)) {
+    // If this is the most recent review and date/priority changed, recalculate next review date
+    if (isLastReview && (updates.date !== undefined || updates.priority !== undefined)) {
       problem.nextReviewDate = this.scheduler.scheduleNextReview(
         problem,
-        review.difficulty,
+        review.priority,
         review.date
       );
     }
@@ -231,7 +244,7 @@ export class ReviewService {
     const todoItems = await todoService.exportData();
 
     const exportPayload = {
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       data: { problems, todoItems },
     };
@@ -241,6 +254,7 @@ export class ReviewService {
 
   /**
    * Import data from a JSON string, validating structure
+   * Handles both v2 (difficulty) and v3 (priority) formats
    * Returns the number of problems imported
    */
   async importData(jsonString: string): Promise<number> {
@@ -250,14 +264,22 @@ export class ReviewService {
       throw new Error("Invalid export file format");
     }
 
+    const isV2 = parsed.version < 3;
+
     const problems = parsed.data.problems.map((p: Problem) => ({
       ...p,
       nextReviewDate: new Date(p.nextReviewDate),
       createdAt: new Date(p.createdAt),
-      reviewHistory: p.reviewHistory.map((r) => ({
-        ...r,
-        date: new Date(r.date),
-      })),
+      reviewHistory: p.reviewHistory.map((r: any) => {
+        const record: ReviewRecord = {
+          date: new Date(r.date),
+          priority: isV2 && r.difficulty !== undefined
+            ? migrateDifficultyToPriority(r.difficulty)
+            : r.priority,
+          ...(r.notes && { notes: r.notes }),
+        };
+        return record;
+      }),
     }));
 
     await this.repository.importMany(problems);

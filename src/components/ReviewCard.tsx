@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ReviewItem } from "@/domain/ReviewQueue";
-import { Difficulty } from "@/domain/models/Problem";
+import { ReturnPriority } from "@/domain/models/Problem";
 import { format } from "date-fns";
 import { ChevronRight, Archive, Trash2, ExternalLink } from "lucide-react";
 
@@ -12,28 +12,18 @@ interface ReviewCardProps {
   onDelete: (problemId: string) => void;
 }
 
-const getDifficultyBadge = (difficulty: Difficulty) => {
-  const badges = {
-    [Difficulty.EASY]:
-      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    [Difficulty.MEDIUM]:
-      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-    [Difficulty.HARD]:
-      "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-    [Difficulty.DIDNT_GET]:
-      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+const getPriorityBadge = (priority: ReturnPriority) => {
+  const config: Record<ReturnPriority, { classes: string; label: string }> = {
+    1: { classes: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400", label: "1 - ~3 mo" },
+    2: { classes: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400", label: "2 - ~1 mo" },
+    3: { classes: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400", label: "3 - ~2 wk" },
+    4: { classes: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400", label: "4 - ~1 wk" },
+    5: { classes: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", label: "5 - ~2 days" },
   };
-  const labels = {
-    [Difficulty.EASY]: "Easy",
-    [Difficulty.MEDIUM]: "Medium",
-    [Difficulty.HARD]: "Hard",
-    [Difficulty.DIDNT_GET]: "Didn't Get",
-  };
+  const { classes, label } = config[priority];
   return (
-    <span
-      className={`rounded-full px-2 py-0.5 text-xs font-medium ${badges[difficulty]}`}
-    >
-      {labels[difficulty]}
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${classes}`}>
+      {label}
     </span>
   );
 };
@@ -113,7 +103,7 @@ export default function ReviewCard({
                 <span className="text-neutral-400 dark:text-neutral-500">
                   •
                 </span>
-                {getDifficultyBadge(lastReview.difficulty)}
+                {getPriorityBadge(lastReview.priority)}
               </>
             )}
           </div>

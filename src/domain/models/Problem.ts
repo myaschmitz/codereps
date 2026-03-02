@@ -11,16 +11,12 @@ export interface Problem {
 
 export interface ReviewRecord {
   date: Date;
-  difficulty: Difficulty;
+  priority: ReturnPriority;
   notes?: string;
 }
 
-export enum Difficulty {
-  EASY = "EASY",
-  MEDIUM = "MEDIUM",
-  HARD = "HARD",
-  DIDNT_GET = "DIDNT_GET",
-}
+// 1 = Don't Return (90 days) ... 5 = Return ASAP (2 days)
+export type ReturnPriority = 1 | 2 | 3 | 4 | 5;
 
 // Factory function to create a new problem
 export function createProblem(name: string, number?: number): Problem {

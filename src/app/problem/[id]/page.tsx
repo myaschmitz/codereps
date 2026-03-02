@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { reviewService } from "@/services/ReviewService";
-import { Problem, Difficulty, ReviewRecord } from "@/domain/models/Problem";
+import { Problem, ReturnPriority, ReviewRecord } from "@/domain/models/Problem";
 import { format } from "date-fns";
 import {
   ArrowLeft,
@@ -17,34 +17,26 @@ import {
   Trash2,
 } from "lucide-react";
 
-const getDifficultyBadge = (difficulty: Difficulty) => {
-  const badges = {
-    [Difficulty.EASY]:
-      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    [Difficulty.MEDIUM]:
-      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-    [Difficulty.HARD]:
-      "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-    [Difficulty.DIDNT_GET]:
-      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+const getPriorityBadge = (priority: ReturnPriority) => {
+  const config: Record<ReturnPriority, { classes: string; label: string }> = {
+    1: { classes: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400", label: "1 - ~3 mo" },
+    2: { classes: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400", label: "2 - ~1 mo" },
+    3: { classes: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400", label: "3 - ~2 wk" },
+    4: { classes: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400", label: "4 - ~1 wk" },
+    5: { classes: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", label: "5 - ~2 days" },
   };
-  const labels = {
-    [Difficulty.EASY]: "Easy",
-    [Difficulty.MEDIUM]: "Medium",
-    [Difficulty.HARD]: "Hard",
-    [Difficulty.DIDNT_GET]: "Didn't Get",
-  };
+  const { classes, label } = config[priority];
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-xs font-medium ${badges[difficulty]}`}
+      className={`rounded-full px-2 py-0.5 text-xs font-medium ${classes}`}
     >
-      {labels[difficulty]}
+      {label}
     </span>
   );
 };
 
 interface EditState {
-  difficulty: Difficulty;
+  priority: ReturnPriority;
   note: string;
 }
 
@@ -56,7 +48,7 @@ export default function ProblemDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editState, setEditState] = useState<EditState>({
-    difficulty: Difficulty.MEDIUM,
+    priority: 3,
     note: "",
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -113,14 +105,14 @@ export default function ProblemDetailPage() {
   const handleStartEdit = (index: number, record: ReviewRecord) => {
     setEditingIndex(index);
     setEditState({
-      difficulty: record.difficulty,
+      priority: record.priority,
       note: record.notes || "",
     });
   };
 
   const handleCancelEdit = () => {
     setEditingIndex(null);
-    setEditState({ difficulty: Difficulty.MEDIUM, note: "" });
+    setEditState({ priority: 3, note: "" });
   };
 
   const handleSaveReview = async (index: number) => {
@@ -128,12 +120,12 @@ export default function ProblemDetailPage() {
     setIsSaving(true);
     try {
       await reviewService.updateReviewRecord(problem.id, index, {
-        difficulty: editState.difficulty,
+        priority: editState.priority,
         note: editState.note,
       });
       await loadProblem();
       setEditingIndex(null);
-      setEditState({ difficulty: Difficulty.MEDIUM, note: "" });
+      setEditState({ priority: 3, note: "" });
     } catch (error) {
       console.error("Error saving review:", error);
     } finally {
@@ -227,15 +219,10 @@ export default function ProblemDetailPage() {
                   {problem.reviewHistory.length !== 1 ? "s" : ""}
                 </span>
                 {lastReview && (
-                  <>
-                    {/* <span className="text-neutral-400 dark:text-neutral-500">
-                      |
-                    </span> */}
-                    <div className="text-neutral-600 dark:text-neutral-400 flex flex-wrap gap-2">
-                      Last difficulty:
-                      {getDifficultyBadge(lastReview.difficulty)}
-                    </div>
-                  </>
+                  <div className="text-neutral-600 dark:text-neutral-400 flex flex-wrap gap-2">
+                    Last priority:
+                    {getPriorityBadge(lastReview.priority)}
+                  </div>
                 )}
               </div>
             </div>
@@ -335,11 +322,12 @@ interface ReviewHistoryItemProps {
   onEditStateChange: (state: EditState) => void;
 }
 
-const difficultyOptions = [
-  { value: Difficulty.EASY, label: "Easy" },
-  { value: Difficulty.MEDIUM, label: "Medium" },
-  { value: Difficulty.HARD, label: "Hard" },
-  { value: Difficulty.DIDNT_GET, label: "Didn't Get" },
+const priorityOptions: { value: ReturnPriority; label: string }[] = [
+  { value: 1, label: "1 - ~3 mo" },
+  { value: 2, label: "2 - ~1 mo" },
+  { value: 3, label: "3 - ~2 wk" },
+  { value: 4, label: "4 - ~1 wk" },
+  { value: 5, label: "5 - ~2 days" },
 ];
 
 function ReviewHistoryItem({
@@ -360,7 +348,7 @@ function ReviewHistoryItem({
           <span className="font-medium text-neutral-700 dark:text-neutral-300">
             {format(new Date(reviewRecord.date), "MMM d, yyyy")}
           </span>
-          {getDifficultyBadge(reviewRecord.difficulty)}
+          {getPriorityBadge(reviewRecord.priority)}
         </div>
         {!isEditing && (
           <button
@@ -375,26 +363,26 @@ function ReviewHistoryItem({
 
       {isEditing ? (
         <div className="mt-3 space-y-3">
-          {/* Difficulty select */}
+          {/* Priority select */}
           <div>
             <label
-              htmlFor={`review-difficulty-${index}`}
+              htmlFor={`review-priority-${index}`}
               className="mb-1 block text-xs font-medium text-neutral-600 dark:text-neutral-400"
             >
-              Difficulty
+              Return Priority
             </label>
             <select
-              id={`review-difficulty-${index}`}
-              value={editState.difficulty}
+              id={`review-priority-${index}`}
+              value={editState.priority}
               onChange={(e) =>
                 onEditStateChange({
                   ...editState,
-                  difficulty: e.target.value as Difficulty,
+                  priority: parseInt(e.target.value) as ReturnPriority,
                 })
               }
               className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
             >
-              {difficultyOptions.map((opt) => (
+              {priorityOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>

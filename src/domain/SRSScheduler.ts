@@ -1,4 +1,4 @@
-import { Problem, Difficulty, ReviewRecord } from "./models/Problem";
+import { Problem, ReturnPriority, ReviewRecord } from "./models/Problem";
 import { addDays, startOfDay } from "date-fns";
 
 /**
@@ -9,82 +9,64 @@ import { addDays, startOfDay } from "date-fns";
  */
 export class SRSScheduler {
   private readonly MAX_INTERVAL_DAYS = 90;
-  private readonly AUTO_ARCHIVE_THRESHOLD = 3; // Archive after 3 successful reviews
+  private readonly AUTO_ARCHIVE_THRESHOLD = 3; // Archive after 3 low-priority reviews
 
   /**
-   * Calculate the next review date based on difficulty and review history
-   * This is the main public interface - simple input/output
+   * Calculate the next review date based on priority and review history
    */
-  scheduleNextReview(problem: Problem, difficulty: Difficulty, fromDate?: Date): Date {
+  scheduleNextReview(problem: Problem, priority: ReturnPriority, fromDate?: Date): Date {
     const reviewCount = problem.reviewHistory.length;
-    const baseInterval = this.getBaseInterval(difficulty);
-    const multiplier = this.getMultiplier(reviewCount, difficulty);
+    const baseInterval = this.getBaseInterval(priority);
+    const multiplier = this.getMultiplier(reviewCount, priority);
     const intervalDays = Math.min(
-      baseInterval * multiplier,
+      Math.round(baseInterval * multiplier),
       this.MAX_INTERVAL_DAYS,
     );
 
-    // Schedule from provided date or today (start of day) to avoid time-of-day issues
     const baseDate = fromDate ? startOfDay(fromDate) : startOfDay(new Date());
     return startOfDay(addDays(baseDate, intervalDays));
   }
 
   /**
    * Determine if a problem should be auto-archived
-   * (based on successful review count)
+   * (based on low-priority review count — ratings 1 or 2)
    */
   shouldArchive(problem: Problem): boolean {
-    const successfulReviews = this.countSuccessfulReviews(
-      problem.reviewHistory,
-    );
-    return successfulReviews >= this.AUTO_ARCHIVE_THRESHOLD;
+    const lowPriorityCount = this.countLowPriorityReviews(problem.reviewHistory);
+    return lowPriorityCount >= this.AUTO_ARCHIVE_THRESHOLD;
   }
 
   // ========================================
   // PRIVATE METHODS
   // ========================================
 
-  /**
-   * Get base interval in days for initial review
-   */
-  private getBaseInterval(difficulty: Difficulty): number {
-    switch (difficulty) {
-      case Difficulty.EASY:
-        return this.MAX_INTERVAL_DAYS; // Archive essentially
-      case Difficulty.MEDIUM:
-        return 7;
-      case Difficulty.HARD:
-        return 3;
-      case Difficulty.DIDNT_GET:
-        return 1;
-    }
+  private getBaseInterval(priority: ReturnPriority): number {
+    const intervals: Record<ReturnPriority, number> = {
+      1: 90,
+      2: 30,
+      3: 14,
+      4: 7,
+      5: 2,
+    };
+    return intervals[priority];
   }
 
   /**
-   * Get multiplier based on review count
-   * Progression: 1x → 2x → 2x → 3x → 3x...
+   * Get multiplier based on review count.
+   * Only applies to ratings 3-5 (higher urgency). Ratings 1-2 stay fixed.
    */
-  private getMultiplier(reviewCount: number, difficulty: Difficulty): number {
-    // If marked EASY or DIDNT_GET, don't apply multiplier
-    if (difficulty === Difficulty.EASY || difficulty === Difficulty.DIDNT_GET) {
-      return 1;
-    }
+  private getMultiplier(reviewCount: number, priority: ReturnPriority): number {
+    if (priority <= 2) return 1;
 
-    // For MEDIUM and HARD, apply multiplier based on successful review count
-    if (reviewCount === 0) return 1;
-    if (reviewCount === 1) return 1;
-    if (reviewCount === 2) return 2;
-    if (reviewCount === 3) return 2;
-    return 3; // 4+ reviews
+    if (reviewCount <= 2) return 1;
+    if (reviewCount <= 4) return 1.5;
+    return 2;
   }
 
   /**
-   * Count successful reviews (EASY or MEDIUM)
+   * Count reviews with low return priority (1 or 2)
    */
-  private countSuccessfulReviews(reviewHistory: ReviewRecord[]): number {
-    return reviewHistory.filter(
-      (r) =>
-        r.difficulty === Difficulty.EASY || r.difficulty === Difficulty.MEDIUM,
-    ).length;
+  private countLowPriorityReviews(reviewHistory: ReviewRecord[]): number {
+    return reviewHistory.filter((r) => r.priority <= 2).length;
   }
 }

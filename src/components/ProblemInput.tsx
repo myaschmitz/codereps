@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { reviewService } from "@/services/ReviewService";
 import { todoService } from "@/services/TodoService";
-import { Problem, Difficulty } from "@/domain/models/Problem";
+import { Problem, ReturnPriority } from "@/domain/models/Problem";
 import { TodoItem } from "@/domain/models/TodoItem";
 import { format } from "date-fns";
 import { Search, ListTodo } from "lucide-react";
@@ -22,8 +22,8 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
   const [reviewDate, setReviewDate] = useState(
     format(new Date(), "yyyy-MM-dd"),
   );
-  const [selectedDifficulty, setSelectedDifficulty] =
-    useState<Difficulty | null>(null);
+  const [selectedPriority, setSelectedPriority] =
+    useState<ReturnPriority | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
@@ -81,11 +81,11 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
     setShowSuggestions(false);
   };
 
-  const handleSubmit = async (difficulty: Difficulty) => {
+  const handleSubmit = async (priority: ReturnPriority) => {
     if (!problemName.trim()) return;
 
     setIsSubmitting(true);
-    setSelectedDifficulty(difficulty);
+    setSelectedPriority(priority);
 
     try {
       const parsedDate = new Date(reviewDate);
@@ -94,7 +94,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
         // Recording a review for existing problem
         await reviewService.recordReview(
           selectedProblem.id,
-          difficulty,
+          priority,
           parsedDate,
           reviewNotes.trim() || undefined,
         );
@@ -113,7 +113,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
         // If it's a new problem, record the initial review
         await reviewService.recordReview(
           problem.id,
-          difficulty,
+          priority,
           parsedDate,
           reviewNotes.trim() || undefined,
         );
@@ -129,7 +129,7 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
       setReviewNotes("");
       setSelectedProblem(null);
       setSelectedFromTodo(false);
-      setSelectedDifficulty(null);
+      setSelectedPriority(null);
       onProblemAdded();
     } catch (error) {
       console.error("Error adding problem:", error);
@@ -279,44 +279,50 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
         />
       </div>
 
-      {/* Difficulty Buttons */}
+      {/* Priority Buttons */}
       <div className="space-y-2">
         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-          How did it go?
+          How soon do you need to return?
         </label>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <DifficultyButton
-            difficulty={Difficulty.EASY}
-            label="Easy"
+        <div className="grid grid-cols-5 gap-2">
+          <PriorityButton
+            priority={1}
+            subtitle="~3 mo"
             color="green"
-            onClick={() => handleSubmit(Difficulty.EASY)}
-            isLoading={isSubmitting && selectedDifficulty === Difficulty.EASY}
+            onClick={() => handleSubmit(1)}
+            isLoading={isSubmitting && selectedPriority === 1}
             disabled={isSubmitting || !problemName.trim()}
           />
-          <DifficultyButton
-            difficulty={Difficulty.MEDIUM}
-            label="Medium"
+          <PriorityButton
+            priority={2}
+            subtitle="~1 mo"
+            color="teal"
+            onClick={() => handleSubmit(2)}
+            isLoading={isSubmitting && selectedPriority === 2}
+            disabled={isSubmitting || !problemName.trim()}
+          />
+          <PriorityButton
+            priority={3}
+            subtitle="~2 wk"
             color="yellow"
-            onClick={() => handleSubmit(Difficulty.MEDIUM)}
-            isLoading={isSubmitting && selectedDifficulty === Difficulty.MEDIUM}
+            onClick={() => handleSubmit(3)}
+            isLoading={isSubmitting && selectedPriority === 3}
             disabled={isSubmitting || !problemName.trim()}
           />
-          <DifficultyButton
-            difficulty={Difficulty.HARD}
-            label="Hard"
+          <PriorityButton
+            priority={4}
+            subtitle="~1 wk"
             color="orange"
-            onClick={() => handleSubmit(Difficulty.HARD)}
-            isLoading={isSubmitting && selectedDifficulty === Difficulty.HARD}
+            onClick={() => handleSubmit(4)}
+            isLoading={isSubmitting && selectedPriority === 4}
             disabled={isSubmitting || !problemName.trim()}
           />
-          <DifficultyButton
-            difficulty={Difficulty.DIDNT_GET}
-            label="Didn't Get"
+          <PriorityButton
+            priority={5}
+            subtitle="~2 days"
             color="red"
-            onClick={() => handleSubmit(Difficulty.DIDNT_GET)}
-            isLoading={
-              isSubmitting && selectedDifficulty === Difficulty.DIDNT_GET
-            }
+            onClick={() => handleSubmit(5)}
+            isLoading={isSubmitting && selectedPriority === 5}
             disabled={isSubmitting || !problemName.trim()}
           />
         </div>
@@ -325,42 +331,48 @@ export default function ProblemInput({ onProblemAdded }: ProblemInputProps) {
   );
 }
 
-interface DifficultyButtonProps {
-  difficulty: Difficulty;
-  label: string;
-  color: "green" | "yellow" | "orange" | "red";
+interface PriorityButtonProps {
+  priority: ReturnPriority;
+  subtitle: string;
+  color: "green" | "teal" | "yellow" | "orange" | "red";
   onClick: () => void;
   isLoading: boolean;
   disabled: boolean;
 }
 
-function DifficultyButton({
-  label,
+function PriorityButton({
+  priority,
+  subtitle,
   color,
   onClick,
   isLoading,
   disabled,
-}: DifficultyButtonProps) {
+}: PriorityButtonProps) {
   const colorClasses = {
     green:
-      "bg-green-500 hover:bg-green-600 active:bg-green-700 disabled:bg-green-300",
+      "bg-green-800 hover:bg-green-900 active:bg-green-950 disabled:bg-green-400",
+    teal:
+      "bg-teal-800 hover:bg-teal-900 active:bg-teal-950 disabled:bg-teal-400",
     yellow:
-      "bg-yellow-500 hover:bg-yellow-600 active:bg-yellow-700 disabled:bg-yellow-300",
+      "bg-yellow-800 hover:bg-yellow-900 active:bg-yellow-950 disabled:bg-yellow-400",
     orange:
-      "bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:bg-orange-300",
-    red: "bg-red-500 hover:bg-red-600 active:bg-red-700 disabled:bg-red-300",
+      "bg-orange-800 hover:bg-orange-900 active:bg-orange-950 disabled:bg-orange-400",
+    red: "bg-red-800 hover:bg-red-900 active:bg-red-950 disabled:bg-red-400",
   };
 
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-lg px-4 py-3 font-medium text-white transition-all ${colorClasses[color]} disabled:cursor-not-allowed`}
+      className={`rounded-lg px-2 py-3 font-medium text-white transition-all ${colorClasses[color]} disabled:cursor-not-allowed`}
     >
       {isLoading ? (
         <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
       ) : (
-        label
+        <div className="flex flex-col items-center">
+          <span className="text-sm font-bold">{priority}</span>
+          <span className="text-xs opacity-80">{subtitle}</span>
+        </div>
       )}
     </button>
   );
