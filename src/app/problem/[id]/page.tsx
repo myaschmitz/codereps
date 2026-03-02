@@ -44,7 +44,6 @@ const getDifficultyBadge = (difficulty: Difficulty) => {
 };
 
 interface EditState {
-  date: string; // ISO date string for input
   difficulty: Difficulty;
   note: string;
 }
@@ -57,7 +56,6 @@ export default function ProblemDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editState, setEditState] = useState<EditState>({
-    date: "",
     difficulty: Difficulty.MEDIUM,
     note: "",
   });
@@ -115,7 +113,6 @@ export default function ProblemDetailPage() {
   const handleStartEdit = (index: number, record: ReviewRecord) => {
     setEditingIndex(index);
     setEditState({
-      date: format(new Date(record.date), "yyyy-MM-dd"),
       difficulty: record.difficulty,
       note: record.notes || "",
     });
@@ -123,7 +120,7 @@ export default function ProblemDetailPage() {
 
   const handleCancelEdit = () => {
     setEditingIndex(null);
-    setEditState({ date: "", difficulty: Difficulty.MEDIUM, note: "" });
+    setEditState({ difficulty: Difficulty.MEDIUM, note: "" });
   };
 
   const handleSaveReview = async (index: number) => {
@@ -131,13 +128,12 @@ export default function ProblemDetailPage() {
     setIsSaving(true);
     try {
       await reviewService.updateReviewRecord(problem.id, index, {
-        date: new Date(editState.date),
         difficulty: editState.difficulty,
         note: editState.note,
       });
       await loadProblem();
       setEditingIndex(null);
-      setEditState({ date: "", difficulty: Difficulty.MEDIUM, note: "" });
+      setEditState({ difficulty: Difficulty.MEDIUM, note: "" });
     } catch (error) {
       console.error("Error saving review:", error);
     } finally {
@@ -379,25 +375,6 @@ function ReviewHistoryItem({
 
       {isEditing ? (
         <div className="mt-3 space-y-3">
-          {/* Date input */}
-          <div>
-            <label
-              htmlFor={`review-date-${index}`}
-              className="mb-1 block text-xs font-medium text-neutral-600 dark:text-neutral-400"
-            >
-              Date
-            </label>
-            <input
-              id={`review-date-${index}`}
-              type="date"
-              value={editState.date}
-              onChange={(e) =>
-                onEditStateChange({ ...editState, date: e.target.value })
-              }
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
-            />
-          </div>
-
           {/* Difficulty select */}
           <div>
             <label
